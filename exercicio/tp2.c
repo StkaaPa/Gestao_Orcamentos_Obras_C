@@ -26,13 +26,15 @@ typedef struct orcamento{   // Estrutura para orçamentos
 	float valorOrcamento;
 	int tipoEstado; // 1=por analisar ; 2=Em análise ; 3=Analisado
 	int resultado; // 1 -Aprovado; 2 - Reprovado
+	int userType;
 }ORCAMENTO;
 
 typedef struct utilizador{ // Estrutura para utilizadores
 	char nomeUtilizador[15];
 	char sobrenomeUtilizador[15];
-	char password;
-	int tipoUtilizador; // Decisor ou administrador
+	int numeroUtilizador;
+	char password[7];
+	int tipoUtilizador; // 1 - Admin; 2 - Decisor
 }UTILIZADOR;
 
 
@@ -43,7 +45,13 @@ void listarOrcamentos(int quantidadeOrcamentos, ORCAMENTO orcamento[],ORCAMENTO 
 void listarOrcamentosAcima(ORCAMENTO orcamento[], int quantidadeOrcamentos, ORCAMENTO *apontador);
 void listarFornecedor(ORCAMENTO orcamento[], int quantidadeOrcamentos, ORCAMENTO *apontador);
 void listarOrcamentosAnalisadosAprovados(int quantidadeOrcamentos, ORCAMENTO orcamento[]);
-
+void inserirUtilizador(UTILIZADOR utilizador [], int *quantidadeUtilizadores, UTILIZADOR *apontador);
+void listarUtilizador(int quantidadeUtilizadores, UTILIZADOR utilizador[],UTILIZADOR *apontador);
+void sair (char menuGuardar, int quantidadeOrcamentos, ORCAMENTO orcamento[], ORCAMENTO *apontador, UTILIZADOR utilizador[], int quantidadeUtilizadores);
+void gravarOrcamentos (ORCAMENTO orcamento [], int quantidadeOrcamentos, ORCAMENTO *apontador);
+int lerOrcamentos(ORCAMENTO orcamento[], ORCAMENTO *apontador);
+void gravarUtilizadores(UTILIZADOR utilizador [], int quantidadeUtilizadores, UTILIZADOR *apontador);
+int lerUtilizadores(UTILIZADOR utilizador[], UTILIZADOR *apontador);
 
 int main(void) {
     
@@ -60,6 +68,7 @@ int main(void) {
     int escolha, menuGuardar, procuraNumero;
     int i;
     int quantidadeOrcamentos = 0;
+	int quantidadeUtilizadores = 0;
   
     ////quantidadeOrcamentos = lerOrcamentos(orcamento);       ANALISAR
     //int nOrcamentos[N]; //numero do orcamento
@@ -116,13 +125,36 @@ int main(void) {
 			listarOrcamentosAnalisadosAprovados(quantidadeOrcamentos, orcamento);
 		}
 		break;
+
+	case 7:
+		if (quantidadeUtilizadores<N){
+		    inserirUtilizador(utilizador, &quantidadeUtilizadores, &apontador);
+	    } else {
+		    printf("\nNão é possivel inserir mais utilizadores\n");
+	    }
+		break;
+
+	case 8:
+		if(quantidadeUtilizadores != 0) {
+			listarUtilizador(quantidadeUtilizadores, utilizador, &apontador);
+		}else {
+			printf("\n\nNao existem utilizadores para procurar!!\n\n");
+		}
+		break;
+
+	case 9:
+		quantidadeOrcamentos = lerOrcamentos(orcamento,&apontador); 
+		break;
+
+	case 10:
+		quantidadeUtilizadores = lerUtilizadores(utilizador,&apontador);
+		break;
+
 	case 0: //inserir as instruções para sair e guardar
-	
-	// sair(menuGuardar, quantidadeOrcamentos, orcamento,&apontador);
-	 
+		sair(menuGuardar, quantidadeOrcamentos, orcamento, &apontador, quantidadeUtilizadores, utilizador);
 	break;
 	
-	default: printf ("\nOPERAÇÃO INVÁLIDA\n");
+	default: printf ("\n operacao invalida!! \n");
     break;
     
         }
@@ -146,30 +178,47 @@ int menu() {
 	printf("\t\t| 6  - Listar orcamentos analisados e aprovados  |\n");
 	printf("\t\t| 7  - Registar Utilizador                       |\n");
 	printf("\t\t| 8  - Listar Utilizador                         |\n");
+	printf("\t\t| 9  - Importar Orcamentos                       |\n");
+	printf("\t\t| 10  - Importar Utilizadores                    |\n");
 	printf("\t\t|------------------------------------------------|\n");
-	printf("\t\t| 0  - Fechar Program                            |\n");
+	printf("\t\t| 0  - Fechar Programa e Guardar Ficheiro        |\n");
 	printf("\t\t|________________________________________________|\n");
     printf("\n\t\tIntroduza uma das opcoes: ");
 
 	do{
 		fflush(stdin);
 		scanf("%d",&i);
-	}while(i<0 && i>11);
+	}while(i<0 && i>10);
 	return i;
 }
 
 
 void inserirOrcamentos(ORCAMENTO orcamento [], int *quantidadeOrcamentos, ORCAMENTO *apontador){                            // função para inserir orçamentos quando a opção 1 do menu é selecionada
 
+int type;
 	    orcamento[*quantidadeOrcamentos].numeroOrcamentos = *quantidadeOrcamentos + 1 ;
 	    printf("\n Nome do fornecedor do Orçamento: ");
 	    fflush(stdin);
 		scanf("%[^\n]s", orcamento[*quantidadeOrcamentos].nomeFornecedor);
-		printf("\n Descrição do orçamento: ");
+		printf("\n Descricao do orçamento: ");
 	    fflush(stdin);
 		scanf("%[^\n]s", orcamento[*quantidadeOrcamentos].descricao);
 		printf("\n Valor do orçamento: ");
 		scanf("%f", &(orcamento[*quantidadeOrcamentos].valorOrcamento));
+		do{
+		printf("\n Orcamento  criado por: : << 1 - Admin >> << 2 - Decisor >>: ");
+		scanf("%d", &type);
+		}while (type != 1 && type != 2);
+		switch (type) {
+			case 1:{   // criado por admin
+				((apontador->userType)=1);
+				break;
+			}
+			case 2:{ // criado por decisor
+				((apontador->userType)=2);
+		}
+				break;
+		}
 		(apontador->tipoEstado)=1;
 		
 		*quantidadeOrcamentos=*quantidadeOrcamentos+1;
@@ -180,6 +229,7 @@ void alterarOrcamentos(int procuraNumero, int quantidadeOrcamentos, ORCAMENTO or
 int i;
 int menuEstado;
 int aprovacao;
+
 	printf("\nQual o número do orçamento a alterar: \n");
 		scanf("%d",&procuraNumero);
 		//procurar se existe
@@ -215,27 +265,31 @@ int aprovacao;
 				break;
 			}
 		}
-
-		do{
-		printf("\n Estado do Orçamento: << 1 - Aprovado >> << 2 - Reprovado >>: ");
-		scanf("%d", &aprovacao);
-		}while (aprovacao != 1 && aprovacao != 2);
-		switch (aprovacao) {
-			case 1:{   // coloca o estado para Aprovar
-				((apontador->resultado)=1);
-				break;
-			}
-			case 2:{ // colocar o estado em Reprovado
-				((apontador->resultado)=2);
-			}
-				break;
+		if(apontador->userType != 1){
+			do{
+				printf("\n Estado do Orçamento: << 1 - Aprovado >> << 2 - Reprovado >>: ");
+				scanf("%d", &aprovacao);
+			}while (aprovacao != 1 && aprovacao != 2);
+			switch (aprovacao) {
+				case 1:{   // coloca o estado para Aprovar
+					((apontador->resultado)=1);
+					break;
+				}
+				case 2:{ // colocar o estado em Reprovado
+					((apontador->resultado)=2);
+				}
+					break;
+				}
+		} else {
+			printf("\n Operacao apenas para utilizadores do tipo Decisor! Um Abraço! Fica Bem! ");
 		}
 	} else {
 	printf("\nO orçamento número %d NÃO EXISTE!!!", procuraNumero);
 	}
 }
 
-void listarOrcamentos(int quantidadeOrcamentos, ORCAMENTO orcamento[],ORCAMENTO *apontador){                                // função para listar orçamentos quando a opção 3 do menu é selecionada
+void listarOrcamentos(int quantidadeOrcamentos, ORCAMENTO orcamento[],ORCAMENTO *apontador){                                
+	// função para listar orçamentos quando a opção 3 do menu é selecionada
 	int i;
 	
 	
@@ -337,4 +391,213 @@ void listarOrcamentosAnalisadosAprovados(int quantidadeOrcamentos, ORCAMENTO orc
 			printf("\nNão existem orçamentos analisados e aprovados");
 		}	
 	}
+}
+
+void inserirUtilizador(UTILIZADOR utilizador [], int *quantidadeUtilizadores, UTILIZADOR *apontador){                            
+	// função para inserir orçamentos quando a opção 1 do menu é selecionada
+
+	int tipo;
+
+	    utilizador[*quantidadeUtilizadores].numeroUtilizador = *quantidadeUtilizadores + 1;
+	    printf("\n Nome do Utilizador: ");
+	    fflush(stdin);
+		scanf("%[^\n]s", utilizador[*quantidadeUtilizadores].nomeUtilizador);
+		printf("\n Sobrenome do utilizador: ");
+	    fflush(stdin);
+		scanf("%[^\n]s", utilizador[*quantidadeUtilizadores].sobrenomeUtilizador);
+		printf("\n Password do utilizador: ");
+		scanf("%s", utilizador[*quantidadeUtilizadores].password);
+		do{
+		printf("\n Tipo de Utilizador: << 1 - Admin >> << 2 - Decisor >>: ");
+		scanf("%d", &tipo);
+		}while (tipo != 1 && tipo != 2);
+		switch (tipo) {
+			case 1:{   // coloca o estado para analisar
+				((apontador->tipoUtilizador)=1);
+				break;
+			}
+			case 2:{ // colocar o estado em analise
+			((apontador->tipoUtilizador)=2);
+		}
+				break;
+		}
+		
+		*quantidadeUtilizadores=*quantidadeUtilizadores+1;
+	
+}
+
+void listarUtilizador(int quantidadeUtilizadores, UTILIZADOR utilizador[],UTILIZADOR *apontador){                                // função para listar orçamentos quando a opção 3 do menu é selecionada
+	int i;
+	
+	
+	for (i=0; i<quantidadeUtilizadores ; i++){
+			printf("\n------------------------------------\n");
+			printf ("\n Número do Utilizador: %d \n", utilizador[i].numeroUtilizador);
+			printf ("\n Nome do Utilizador: %s \n", utilizador[i].nomeUtilizador);
+			printf ("\n Sobrenome do utilizador: %s \n", utilizador[i].sobrenomeUtilizador);
+			if((apontador->tipoUtilizador)==1){
+				printf("\n Tipo Utilizaor: Admin\n");
+			}
+			if((apontador->tipoUtilizador)==2){
+				printf("\n Tipo Utilizador: Decisor\n");
+			}
+		printf("\n********************************\n");
+	}
+}
+
+int lerOrcamentos(ORCAMENTO orcamento[], ORCAMENTO *apontador ){  
+	//tem como função importar os dados inseridos
+	int nOrcamentosLidos = 0;
+	int i;
+	char importarFicheiro[50];
+	
+	printf ("\nIndique o nome do ficheiro que pretende importar: \n");
+	scanf ("\n %s: \n", importarFicheiro);
+	strcat(importarFicheiro,".dat");
+	FILE* apFicheiro = fopen(importarFicheiro,"rb");
+	
+	
+	if (apFicheiro != NULL){
+		fscanf(apFicheiro,"%i", &nOrcamentosLidos);
+		fgetc(apFicheiro);
+	i = 0;
+		while(fscanf(apFicheiro,"%i",&(orcamento[i].numeroOrcamentos) )!= EOF){
+		fgetc(apFicheiro);
+		fscanf(apFicheiro,"%[^\n]s",orcamento[i].nomeFornecedor);
+		fgetc(apFicheiro);	
+		fscanf(apFicheiro,"%[^\n]s",orcamento[i].descricao) ;
+		fgetc(apFicheiro);	
+		fscanf(apFicheiro,"%f",&(orcamento[i].valorOrcamento));
+		fgetc(apFicheiro);	
+		fscanf(apFicheiro,"%d",&(orcamento[i].tipoEstado)); 
+		fgetc(apFicheiro);	
+		
+		i++;
+		}
+		fclose(apFicheiro);
+	}else {
+		printf("NÃO EXISTE NENHUM FICHEIRO DE ORÇAMENTOS");
+		system ("Pause");
+	}
+	return i;
+}
+
+void sair (char menuGuardar, int quantidadeOrcamentos, ORCAMENTO orcamento[], ORCAMENTO *apontador, UTILIZADOR utilizador[], int quantidadeUtilizadores){   								
+	//Função para sair e guarda o documento
+
+do{
+		printf ("\nPretende guardar os dados inseridos?  -> 1 = Sim <-  -> 0 = Não <- ");
+		fflush(stdin);
+		scanf("%d", &menuGuardar);
+		}while (menuGuardar != 0 && menuGuardar != 1);
+
+		if (menuGuardar == 1) {
+			if(quantidadeOrcamentos != 0){
+				gravarOrcamentos (orcamento, quantidadeOrcamentos, &apontador);
+				gravarUtilizadores(utilizador, quantidadeUtilizadores, &apontador);
+				printf("\nFicheiro guardado com sucesso! Adeus e bom trabalho");
+			} else {
+				printf("\n Nao existem dados para guardar!");
+			}
+			// if(quantidadeUtilizadores != 0) {
+			// 	gravarUtilizadores(utilizador, quantidadeUtilizadores, &apontador);
+			// 	printf("\nFicheiro guardado com sucesso! Adeus e bom trabalho");
+			// }else{
+			// 	printf("\n Nao existem utilizadores para guardar!");
+			// }
+		}else {
+		
+		printf("\nFicheiro não guardado! Um abraço!");
+	}
+}
+
+void gravarOrcamentos (ORCAMENTO orcamento [], int quantidadeOrcamentos, ORCAMENTO *apontador){ 								
+	//tem como função atribuir um nome a um ficheiro e exportar os dados inseridos
+	char nomeFicheiro[50];
+
+	printf("Introduza o nome do ficheiro: ");
+	scanf("%s",nomeFicheiro);
+	strcat(nomeFicheiro,".dat");
+	FILE *apFicheiro = fopen(nomeFicheiro,"wb");
+	
+	int i;
+
+	for(i = 0; i <quantidadeOrcamentos; i++){
+	
+		fprintf(apFicheiro, "%d\n", orcamento[i].numeroOrcamentos);
+		fprintf(apFicheiro, "%s\n", orcamento[i].nomeFornecedor);
+		fprintf(apFicheiro, "%s\n", orcamento[i].descricao);
+		fprintf(apFicheiro, "%f\n", orcamento[i].valorOrcamento);
+		if((apontador->tipoEstado)==1){
+			printf("\nEstado: Por Analisar\n");
+		}
+		if((apontador->tipoEstado)==2){
+			printf("\nEstado: Em Análise\n");
+		}
+		if((apontador->tipoEstado)==3){
+			printf("\nEstado: Analisado\n");
+		}
+	}
+	fclose(apFicheiro);
+}
+
+void gravarUtilizadores (UTILIZADOR utilizador [], int quantidadeUtilizadores, UTILIZADOR *apontador){ 								
+	//tem como função atribuir um nome a um ficheiro e exportar os dados inseridos
+	char nomeFicheiro[50];
+
+	printf("Introduza o nome do ficheiro: ");
+	scanf("%s",nomeFicheiro);
+	strcat(nomeFicheiro,".dat");
+	FILE *apFicheiro = fopen(nomeFicheiro,"wb");
+	
+	int i;
+
+	for(i = 0; i <quantidadeUtilizadores; i++){
+	
+		fprintf(apFicheiro, "%d\n", utilizador[i].numeroUtilizador);
+		fprintf(apFicheiro, "%s\n", utilizador[i].nomeUtilizador);
+		fprintf(apFicheiro, "%s\n", utilizador[i].sobrenomeUtilizador);
+		if((apontador->tipoUtilizador)==1){
+			printf("\nTipo: Admin\n");
+		}
+		if((apontador->tipoUtilizador)==2){
+			printf("\nTipo: Decisor\n");
+		}
+	}
+	fclose(apFicheiro);
+}
+
+int lerUtilizadores(UTILIZADOR utilizador[], UTILIZADOR *apontador ){  
+	//tem como função importar os dados inseridos
+	int nUtilizadoresLidos = 0;
+	int i;
+	char importarFicheiro[50];
+	
+	printf ("\nIndique o nome do ficheiro que pretende importar: \n");
+	scanf ("\n %s: \n", importarFicheiro);
+	strcat(importarFicheiro,".dat");
+	FILE* apFicheiro = fopen(importarFicheiro,"rb");
+	
+	
+	if (apFicheiro != NULL){
+		fscanf(apFicheiro,"%i", &nUtilizadoresLidos);
+		fgetc(apFicheiro);
+	i = 0;
+		while(fscanf(apFicheiro,"%i",&(utilizador[i].numeroUtilizador) )!= EOF){
+		fgetc(apFicheiro);
+		fscanf(apFicheiro,"%[^\n]s",utilizador[i].nomeUtilizador);
+		fgetc(apFicheiro);	
+		fscanf(apFicheiro,"%[^\n]s",utilizador[i].sobrenomeUtilizador) ;
+		fgetc(apFicheiro);	
+		fscanf(apFicheiro,"%d",&(utilizador[i].tipoUtilizador)); 
+		fgetc(apFicheiro);	
+		
+		i++;
+		}
+		fclose(apFicheiro);
+	}else {
+		printf("NÃO EXISTE NENHUM FICHEIRO DE UTILIZADORES");
+		system ("Pause");
+	}
+	return i;
 }
