@@ -52,6 +52,8 @@ void gravarOrcamentos (ORCAMENTO orcamento [], int quantidadeOrcamentos, ORCAMEN
 int lerOrcamentos(ORCAMENTO orcamento[], ORCAMENTO *apontador);
 void gravarUtilizadores(UTILIZADOR utilizador [], int quantidadeUtilizadores, UTILIZADOR *apontador);
 int lerUtilizadores(UTILIZADOR utilizador[], UTILIZADOR *apontador);
+int login(UTILIZADOR utilizador);
+
 
 int main(void) {
     
@@ -65,7 +67,7 @@ int main(void) {
     ORCAMENTO apontador;
 
 	    
-    int escolha, menuGuardar, procuraNumero;
+    int escolha, menuGuardar, procuraNumero, loginForm;
     int i;
     int quantidadeOrcamentos = 0;
 	int quantidadeUtilizadores = 0;
@@ -77,9 +79,9 @@ int main(void) {
     //float valor[N]; //valor do orcamento
     //int estado[N];
 
-    char procuraFornecedor[15]; //nome do fornecedor a procurar (case6)
+	char procuraFornecedor[15]; //nome do fornecedor a procurar (case6)
     do {
-		escolha = menu();;
+		escolha = menu();
 	
     switch (escolha)
     {
